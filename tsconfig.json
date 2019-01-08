@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+        "target": "esnext",
+        "allowJs": true,
+        "skipLibCheck": false,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "strict": true,
+        "forceConsistentCasingInFileNames": true,
+        "module": "esnext",
+        "moduleResolution": "node",
+        "resolveJsonModule": true,
+        "noEmit": true,
+        "jsx": "preserve",
+        "sourceMap": true,
+        "isolatedModules": true,
+        "experimentalDecorators": true
+    },
+    "include": ["src"],
+    "exclude": ["src/custom-service-worker.js"]
+}

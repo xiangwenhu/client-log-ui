@@ -1,0 +1,31 @@
+@import '~antd/dist/antd.css';
+#root {
+    height: 100%;
+}
+
+.leftMenu a, .topMenu a {
+    color: #FFF
+}
+
+.login-form-wrapper {
+    display: flex;
+    height: 100%;
+}
+
+.login-form-wrapper .login-form {
+    width: 380px;
+    margin: auto
+}
+
+.horizontal .logo {
+    width: 120px;
+    height: 31px;
+    background: rgba(255, 255, 255, .2);
+    margin: 16px 24px 16px 0;
+    float: left;
+}
+
+.vertical .logo {
+    height: 64px;
+    text-align: center;
+}
