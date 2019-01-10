@@ -31,4 +31,3 @@ export function removeAllListeners(emitter: any) {
         })
     }
 }
-

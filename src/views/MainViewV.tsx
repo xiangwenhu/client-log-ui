@@ -5,7 +5,7 @@ import Image_LogDebug from "../images/log-debug.jpg";
 import LeftMenu from "../components/LeftMenu";
 import Views from "./Views";
 import { IAuthStore } from "../stores/authStore";
-
+import { withRouter, RouteComponentProps } from "react-router";
 const { Header, Sider, Content } = Layout;
 
 interface IProps {
@@ -14,7 +14,7 @@ interface IProps {
 
 @inject("authStore")
 @observer
-export default class MainView extends React.Component<IProps> {
+class MainView extends React.Component<IProps & RouteComponentProps> {
     state = {
         collapsed: false
     };
@@ -96,3 +96,5 @@ export default class MainView extends React.Component<IProps> {
         );
     }
 }
+
+export default withRouter(MainView);

@@ -42,8 +42,9 @@ export default class extends React.Component<{}, IState> {
                 "onChannelUserLeaved",
                 this.onChannelUserLeaved
             );
-            this.client.leave();
+            return this.client.leave();
         }
+        return Promise.resolve();
     };
 
     registerEvents = () => {
@@ -61,7 +62,8 @@ export default class extends React.Component<{}, IState> {
         this.queryUserList();
     };
 
-    onEnterLogPage = (accountId: string | number) => {
+    onEnterLogPage = async (accountId: string | number) => {
+        await this.leave()
         this.setState({
             isRedirect: true,
             redirectUrl: `/logs/${accountId}`
