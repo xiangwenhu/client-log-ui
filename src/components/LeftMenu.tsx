@@ -10,7 +10,7 @@ export default class LeftMenu extends React.Component {
                 <Menu.Item key="1">
                     <Icon type="user" />                  
                     <span>  <Link to='/'>主页</Link></span>
-                </Menu.Item>
+                </Menu.Item>       
                 <Menu.Item key="2">
                     <Icon type="setting" />
                     <span><Link to='/settings'>设置</Link></span>

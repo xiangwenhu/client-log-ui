@@ -7,11 +7,10 @@ import MainViewH from "./views/MainViewH"; // 菜单垂直
 import MainViewV from "./views/MainViewV"; // 菜单水平
 import "./App.css";
 import LoginView from "./views/LoginView";
-import { Router } from "react-router-dom";
-import { createBrowserHistory, createHashHistory } from "history";
+import { BrowserRouter as Router } from "react-router-dom";
 import { IAuthStore } from "./stores/authStore";
 
-const history = createHashHistory(); //createBrowserHistory();
+// const history = createHashHistory(); //createBrowserHistory();
 
 interface IProps {
     authStore?: IAuthStore;
@@ -23,7 +22,7 @@ class App extends React.Component<IProps> {
     render() {
         const { authStore } = this.props;
         const content = authStore!.logined ? (
-            <MainViewV  />
+            <MainViewV />
         ) : (
             <LoginView
                 {...{
@@ -33,9 +32,9 @@ class App extends React.Component<IProps> {
         );
 
         return (
-            <Router history={history}>
-                <LocaleProvider locale={zhCN}>{content}</LocaleProvider>
-            </Router>
+            <LocaleProvider locale={zhCN}>
+                <Router>{content}</Router>
+            </LocaleProvider>
         );
     }
 }
