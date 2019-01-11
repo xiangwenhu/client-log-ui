@@ -1,5 +1,5 @@
 import EventEmitter from "eventemitter3";
-import CodeError from "../util/CodeError";
+import CodeError from "./CodeError";
 import { removeAllListeners } from "./util";
 
 export default class SignalingClient {
@@ -61,6 +61,9 @@ export default class SignalingClient {
                 "onInviteReceived"
             ].map(event => {
                 return (this.session[event] = (...args: any[]) => {
+                    if (event === "onMessageInstantReceive") {
+                        console.log("p2p消息:收到", ...args);
+                    }
                     this.sessionEmitter.emit(event, ...args);
                 });
             });

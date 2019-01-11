@@ -5,11 +5,12 @@ export interface IClient {
 }
 
 export enum EnumMessageType {
-    log,
-    info,
-    error,
-    warn,
-    other
+    debug = 'debug',
+    log = 'log',
+    info = 'info',
+    warn ='warn',
+    error = 'error',
+    other = 'other'
 }
 
 export interface IMessage {

@@ -6,7 +6,8 @@ import { ADMIN_ID, CHANNEL_ID } from "../constant/aroga";
 import { message } from "antd";
 import { getJSON } from "../util/common";
 import { IMessage } from "../interface/Signal";
-import MessageList from '../components/log/MessageList'
+import MssageFilter from "../components/log/MessageFilter";
+import MessageList from "../components/log/MessageList";
 
 interface IPathParams {
     account: string;
@@ -15,12 +16,14 @@ type IProps = RouteComponentProps<IPathParams>;
 
 interface IState {
     messages: IMessage[];
+    filter?: Array<string | number>;
 }
 
 export default withRouter(
     class extends React.Component<IProps, IState> {
         state = {
-            messages: []
+            messages: [],
+            filter: []
         };
 
         client?: SignalingClient = undefined;
@@ -47,6 +50,10 @@ export default withRouter(
                     "onChannelUserLeaved",
                     this.onChannelUserLeaved
                 );
+                this.client.sessionEmitter.removeListener(
+                    "onMessageInstantReceive",
+                    this.onMessageInstantReceive
+                );
                 return this.client.leave();
             }
             return Promise.resolve();
@@ -54,13 +61,12 @@ export default withRouter(
 
         registerEvents = () => {
             if (this.client) {
-                this.queryUserList();
                 // 监听客服端离开
                 this.client.channelEmitter.on(
                     "onChannelUserLeaved",
                     this.onChannelUserLeaved
                 );
-                this.client.channelEmitter.on(
+                this.client.sessionEmitter.on(
                     "onMessageInstantReceive",
                     this.onMessageInstantReceive
                 );
@@ -91,19 +97,30 @@ export default withRouter(
             });
         };
 
-        queryUserList = async () => {
-            if (this.client) {
-                const res: { list: any[] } = await this.client.queryUserList();
-            }
-        };
-
         goBack = async () => {
             await this.leave();
             this.props.history.goBack();
         };
 
+        getFilteredMessage = () => {
+            const { messages, filter } = this.state;
+            if (!filter ||  filter.length <= 0) {
+                return messages;
+            }
+            return messages.filter((message: IMessage) => {
+                return filter.includes(message.type as never);
+            });
+        };
+
+        onFilterChange = (filter: Array<string | number>) => {
+            this.setState({
+                filter
+            });
+        };
+
         render() {
-            const { goBack } = this;
+            const { goBack, onFilterChange, getFilteredMessage } = this;
+            const messages  = getFilteredMessage();
             return (
                 <React.Fragment>
                     <div>
@@ -116,7 +133,8 @@ export default withRouter(
                             返 回
                         </a>
                     </div>
-                    <MessageList />
+                    <MssageFilter onChange={onFilterChange} />
+                    <MessageList messages={messages} />
                 </React.Fragment>
             );
         }

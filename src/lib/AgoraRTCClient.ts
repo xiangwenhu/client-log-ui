@@ -1,5 +1,5 @@
 import EventEmitter from 'eventemitter3'
-import CodeError from '../util/CodeError'
+import CodeError from './CodeError'
 import { removeAllListeners } from './util'
 
 const { AgoraRTC } = window as any
