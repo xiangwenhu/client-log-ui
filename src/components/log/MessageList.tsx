@@ -21,7 +21,7 @@ export default class extends React.Component<IProps> {
     render() {
         const content = this.getListContent();
         return <div style={{
-            height:'650px',
+            height:'350px',
             overflowY:'auto'
         }}>{content}</div>;
     }

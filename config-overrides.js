@@ -23,7 +23,7 @@ module.exports = {
         // 定义变量
         rewireDefinePlugin(config, env, {
             $$ENV: JSON.stringify(env),
-            $$AGORA_APP_ID: JSON.stringify("d2baa819ee77434dbf5924967319304c")
+            $$AGORA_APP_ID: JSON.stringify("2b0eaef9a27f4e33909c9647219586dc")
         });
 
         return config;

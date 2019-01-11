@@ -2,6 +2,8 @@ import React from "react";
 import { withRouter, RouteComponentProps } from "react-router";
 import getSignalingClient from "../lib/getSignalingClient";
 import SignalingClient from "../lib/SignalingClient";
+import AgoraRTCClient from "../lib/AgoraRTCClient";
+import getAgoraRTCClient from "../lib/getAgoraRTCClient";
 import { ADMIN_ID, CHANNEL_ID } from "../constant/aroga";
 import { message } from "antd";
 import { getJSON } from "../util/common";
@@ -17,16 +19,19 @@ type IProps = RouteComponentProps<IPathParams>;
 interface IState {
     messages: IMessage[];
     filter?: Array<string | number>;
+    remoteStreamId?: string | null;
 }
 
 export default withRouter(
     class extends React.Component<IProps, IState> {
         state = {
             messages: [],
-            filter: []
+            filter: [],
+            remoteStreamId: null
         };
 
         client?: SignalingClient = undefined;
+        rtcClient?: AgoraRTCClient = undefined;
 
         async componentDidMount() {
             const client = await getSignalingClient(ADMIN_ID, undefined);
@@ -34,10 +39,14 @@ export default withRouter(
                 this.client = client;
                 await this.client.leave();
                 await this.client.join(CHANNEL_ID);
-                this.registerEvents();
                 window.addEventListener("beforeunload", this.leave);
             }
-            console.log("log view:", this.props);
+            const rtcClient = await getAgoraRTCClient();
+            if (rtcClient) {
+                this.rtcClient = rtcClient;
+                await this.rtcClient.safeJoin(null,CHANNEL_ID,ADMIN_ID)
+            }
+            this.registerEvents();
         }
 
         componentWillUnmount() {
@@ -56,6 +65,13 @@ export default withRouter(
                 );
                 return this.client.leave();
             }
+            if (this.rtcClient) {
+                this.rtcClient.safeLeave();
+                this.rtcClient.channelEmitter.removeListener(
+                    "stream-added",
+                    this.clientOnStreamAdded
+                );
+            }
             return Promise.resolve();
         };
 
@@ -69,6 +85,16 @@ export default withRouter(
                 this.client.sessionEmitter.on(
                     "onMessageInstantReceive",
                     this.onMessageInstantReceive
+                );
+            }
+            if (this.rtcClient) {
+                this.rtcClient.channelEmitter.on(
+                    "stream-added",
+                    this.clientOnStreamAdded
+                );
+                this.rtcClient.channelEmitter.on(
+                    "stream-subscribed",
+                    this.clientOnStreamSubscribed
                 );
             }
         };
@@ -97,6 +123,41 @@ export default withRouter(
             });
         };
 
+        clientOnStreamAdded = (evt: any) => {
+            try {
+                const rtcClient = this.rtcClient!;
+                const stream = evt.stream;
+                rtcClient.client.subscribe(stream, function(err: any) {
+                    alert(`订阅流体服务异常，更多细节：${err.reason}`);
+                });
+            } catch (err) {
+                console.log("rtc-error:订阅流体服务异常", err);
+            }
+        };
+
+        clientOnStreamSubscribed = (evt: any) => {
+            try {
+                const stream = evt.stream;
+                const streamId = stream.getId();
+                console.log(
+                    "Subscribe remote stream successfully: " + streamId
+                );
+                this.setState(
+                    {
+                        remoteStreamId: streamId
+                    },
+                    () => {
+                        stream.play("agora_remote" + streamId);
+                    }
+                );
+            } catch (err) {
+                console.log(
+                    "rtc-stream-sinscried:订阅流体服务回调处理异常，",
+                    err
+                );
+            }
+        };
+
         goBack = async () => {
             await this.leave();
             this.props.history.goBack();
@@ -104,7 +165,7 @@ export default withRouter(
 
         getFilteredMessage = () => {
             const { messages, filter } = this.state;
-            if (!filter ||  filter.length <= 0) {
+            if (!filter || filter.length <= 0) {
                 return messages;
             }
             return messages.filter((message: IMessage) => {
@@ -118,9 +179,22 @@ export default withRouter(
             });
         };
 
+        getRemoteStreamElements = () => {
+            try {
+                const { remoteStreamId } = this.state;
+                return <div className="remote_video" id={`agora_remote${remoteStreamId}`} />;
+            } catch (err) {
+                console.log("生成音频HTML元素失败", err);
+                return null
+            }
+        };
+
+
         render() {
             const { goBack, onFilterChange, getFilteredMessage } = this;
-            const messages  = getFilteredMessage();
+            const messages = getFilteredMessage();
+            const remoteStreamElements = this.getRemoteStreamElements();
+
             return (
                 <React.Fragment>
                     <div>
@@ -135,6 +209,9 @@ export default withRouter(
                     </div>
                     <MssageFilter onChange={onFilterChange} />
                     <MessageList messages={messages} />
+                    <div id="agora_remote" style={{
+                        height:'300px'
+                    }}>{remoteStreamElements}</div>
                 </React.Fragment>
             );
         }
