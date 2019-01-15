@@ -42,6 +42,10 @@ export default class extends React.Component<{}, IState> {
                 "onChannelUserLeaved",
                 this.onChannelUserLeaved
             );
+            this.client.channelEmitter.removeListener(
+                "onChannelUserJoined",
+                this.onChannelUserLeaved
+            );
             return this.client.leave();
         }
         return Promise.resolve();
@@ -55,6 +59,11 @@ export default class extends React.Component<{}, IState> {
                 "onChannelUserLeaved",
                 this.onChannelUserLeaved
             );
+            // 监听客服端加入
+            this.client.channelEmitter.on(
+                "onChannelUserJoined",
+                this.onChannelUserJoined
+            );
         }
     };
 
@@ -62,8 +71,12 @@ export default class extends React.Component<{}, IState> {
         this.queryUserList();
     };
 
+    onChannelUserJoined = (account: string | number, uid: string | number) => {
+        this.queryUserList();
+    };
+
     onEnterLogPage = async (accountId: string | number) => {
-        await this.leave()
+        await this.leave();
         this.setState({
             isRedirect: true,
             redirectUrl: `/logs/${accountId}`
@@ -75,9 +88,9 @@ export default class extends React.Component<{}, IState> {
             const res: { list: any[] } = await this.client.queryUserList();
             console.log(res);
             this.setState({
-                clients: (res.list || []).map(
-                    (user: any[]) => ({ account: user[0] } as IClient)
-                )
+                clients: (res.list || [])
+                    .map((user: any[]) => ({ account: user[0] } as IClient))
+                    .filter((client: IClient) => client.account != ADMIN_ID)
             });
         }
     };

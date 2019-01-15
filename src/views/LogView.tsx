@@ -34,6 +34,7 @@ export default withRouter(
         rtcClient?: AgoraRTCClient = undefined;
 
         async componentDidMount() {
+            const { account } = this.props.match.params;
             const client = await getSignalingClient(ADMIN_ID, undefined);
             if (client) {
                 this.client = client;
@@ -44,7 +45,7 @@ export default withRouter(
             const rtcClient = await getAgoraRTCClient();
             if (rtcClient) {
                 this.rtcClient = rtcClient;
-                await this.rtcClient.safeJoin(null,CHANNEL_ID,ADMIN_ID)
+                await this.rtcClient.safeJoin(null, account, ADMIN_ID);
             }
             this.registerEvents();
         }
@@ -70,6 +71,10 @@ export default withRouter(
                 this.rtcClient.channelEmitter.removeListener(
                     "stream-added",
                     this.clientOnStreamAdded
+                );
+                this.rtcClient.channelEmitter.removeListener(
+                    "stream-subscribed",
+                    this.clientOnStreamSubscribed
                 );
             }
             return Promise.resolve();
@@ -119,7 +124,7 @@ export default withRouter(
         ) => {
             const message = getJSON(msg) as IMessage;
             this.setState({
-                messages: [...this.state.messages, message]
+                messages: [message, ...this.state.messages]
             });
         };
 
@@ -182,13 +187,17 @@ export default withRouter(
         getRemoteStreamElements = () => {
             try {
                 const { remoteStreamId } = this.state;
-                return <div className="remote_video" id={`agora_remote${remoteStreamId}`} />;
+                return (
+                    <div
+                        className="remote_video"
+                        id={`agora_remote${remoteStreamId}`}
+                    />
+                );
             } catch (err) {
                 console.log("生成音频HTML元素失败", err);
-                return null
+                return null;
             }
         };
-
 
         render() {
             const { goBack, onFilterChange, getFilteredMessage } = this;
@@ -197,21 +206,24 @@ export default withRouter(
 
             return (
                 <React.Fragment>
-                    <div>
-                        客户端日志
-                        <a
-                            href="javascript:;"
-                            onClick={goBack}
-                            style={{ float: "right" }}
-                        >
-                            返 回
-                        </a>
+                    客户端日志
+                    <a
+                        href="javascript:;"
+                        onClick={goBack}
+                        style={{ float: "right" }}
+                    >
+                        返 回
+                    </a>
+                    <div className="log">
+                        <div className="messages">
+                            <MssageFilter onChange={onFilterChange} />
+                            <MessageList messages={messages} />
+                        </div>
+
+                        <div id="agora_remote" className="video">
+                            {remoteStreamElements}
+                        </div>
                     </div>
-                    <MssageFilter onChange={onFilterChange} />
-                    <MessageList messages={messages} />
-                    <div id="agora_remote" style={{
-                        height:'300px'
-                    }}>{remoteStreamElements}</div>
                 </React.Fragment>
             );
         }

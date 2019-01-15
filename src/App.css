@@ -33,3 +33,15 @@
 .remote_video {
     height: 250px;
 }
+
+.log {
+    display: flex;
+}
+
+.log .messages{
+    flex: 1 1 auto;
+}
+
+.log .video{
+    flex: 0 0 640px;
+}

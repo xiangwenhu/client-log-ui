@@ -8,7 +8,7 @@ export default class AgoraRTCClient {
 
     _appId: string
     client: any
-    channelEmitter: any
+    channelEmitter: EventEmitter
     userId: string | null | number
     stream: any
 
@@ -75,7 +75,7 @@ export default class AgoraRTCClient {
         })
     }
 
-    removeListener(eventName: string, fn: Function): void {
+    removeListener(eventName: string, fn: EventEmitter.ListenerFn): void {
         if (typeof eventName === 'string' && typeof fn === 'function') {
             this.channelEmitter.removeListener(eventName, fn)
         }
